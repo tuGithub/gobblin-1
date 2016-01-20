@@ -14,6 +14,7 @@ package gobblin.config.common.impl;
 
 import java.util.List;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.typesafe.config.Config;
 
 import gobblin.config.store.api.ConfigKeyPath;
@@ -84,8 +85,10 @@ public class ConfigStoreBackedValueInspector implements ConfigStoreValueInspecto
     Config initialConfig = this.getOwnConfig(configKey);
     
     // merge with other configs from imports
-    for(ConfigKeyPath p: recursiveImports){
-      initialConfig = initialConfig.withFallback(this.getConfigInSelfChain(p));
+    if(recursiveImports!=null){
+      for(ConfigKeyPath p: recursiveImports){
+        initialConfig = initialConfig.withFallback(this.getConfigInSelfChain(p));
+      }
     }
     
     // merge with configs from parent
@@ -94,8 +97,10 @@ public class ConfigStoreBackedValueInspector implements ConfigStoreValueInspecto
     return initialConfig;
   }
   
+  
+  @VisibleForTesting
   // return resolved config from self -> parent .. -> root
-  private Config getConfigInSelfChain(ConfigKeyPath configKey){
+  Config getConfigInSelfChain(ConfigKeyPath configKey){
     Config result = this.getOwnConfig(configKey);
     if(configKey.isRootPath())
       return result;
